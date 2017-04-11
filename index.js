@@ -14,7 +14,7 @@ let config;
 function startTransaction(timeout) {
   timeout = timeout || config.transactionTimeout || 20;
   let connection;
-  return this.getConnection().then(conn => {
+  return getConnection().then(conn => {
     connection = conn;
     return connection.query('SET SESSION wait_timeout = ?', [timeout]);
   }).then(()=> {
@@ -44,19 +44,6 @@ function commit(connection) {
   });
 }
 
-function getConnection() {
-  return pool.getConnection().then((conn)=> {
-    console.log('getting connection');
-    let exec = conn.execute;
-    conn.select = function(query, params) {
-      return exec.call(this, query, params).then((results) => {
-        return results[0];
-      });
-    };
-    return conn;
-  });
-}
-
 function query(query, params) {
   let connection;
 
@@ -81,8 +68,22 @@ function query(query, params) {
   });
 }
 
+function getConnection() {
+  return pool.getConnection().then((conn)=> {
+    console.log('getting connection');
+    let exec = conn.execute;
+    conn.select = function(query, params) {
+      return exec.call(this, query, params).then((results) => {
+        return results[0];
+      });
+    };
+    return conn;
+  });
+}
+
 module.exports = function(opts) {
-  if (Object.keys(opts).length <= 0) {
+
+  if (!opts || Object.keys(opts).length <= 0) {
     throw new Error('The config object cannot be empty');
   }
 

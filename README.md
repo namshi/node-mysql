@@ -2,7 +2,7 @@
 
 ## Usage
 
-You need to have a host config object:
+You need to have a host config object that looks as follow (yaml format):
 ```
     host: 'mysql'
     user: 'root'
@@ -11,12 +11,14 @@ You need to have a host config object:
     waitTimeout: 20
     connectionLimit: 8
 ```
-imagine, you call this config `dbConf`. You will pass the config object to node-mysq when you rquire it as follow:
-const myql = require('node-mysql')(dbConf);
+Assuming that the object above is called `dbConf`, you will need to pass it to `node-mysql` when you require it:
+
+`const myql = require('node-mysql')(dbConf);`
 
 ## Available Functions
 `startTransaction(timeout)`
-By default the timeout is set to `dbConf.transactionTimeout` or 20. `startTransaction will also return a connection that you can later use as param to `commit()` and/or `rollback()`.
+
+By default the timeout is set to `dbConf.transactionTimeout` or 20. `startTransaction` will also return a connection that you can later use as parameter to `commit(connection)` and/or `rollback(connection)`.
 
 `commit(connection)`,
 
@@ -26,4 +28,4 @@ By default the timeout is set to `dbConf.transactionTimeout` or 20. `startTransa
 
 ## Credits
 
-We copied the originan code from the [shipments app](https://github.com/namshi/shipments.namshi.net) written mainly by Geshan.
+We copied the original code from the [shipments app](https://github.com/namshi/shipments.namshi.net) written mainly by Geshan.

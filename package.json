@@ -5,7 +5,12 @@
   "main": "index.js",
   "author": "Joe Jean",
   "license": "MIT",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha -t 2000"
+  },
   "dependencies": {
-    "mysql2": "^1.2.0"
+    "mocha": "^3.2.0",
+    "mysql2": "^1.2.0",
+    "should": "^11.2.1"
   }
 }
