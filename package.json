@@ -1,16 +1,38 @@
 {
-  "name": "namshi-mysql",
-  "version": "1.0.0",
-  "description": "Mysql Lib For Namshi",
+  "name": "node-mysql",
+  "version": "0.1.0",
+  "description": "Small wrapper for mysql2.",
   "main": "index.js",
-  "author": "Joe Jean",
-  "license": "MIT",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha -t 2000"
+    "test": "jshint index.js && ./node_modules/.bin/mocha -t 2000",
+    "release": "npm test && release-it -n -i patch",
+    "release:minor": "npm test && release-it -n -i minor",
+    "release:major": "npm test && release-it -n -i major"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/namshi/node-mysql"
+  },
+  "keywords": [
+    "mysql2",
+    "node",
+    "mysql2 transaction",
+    "mysql2 commit",
+    "mysql2 rollback"
+  ],
+  "author": "Joe Jean <joe.jean@namshi.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/namshi/node-mysql/issues"
   },
   "dependencies": {
+    "mysql2": "^1.2.0"
+  },
+  "homepage": "https://github.com/namshi/node-mysql",
+  "devDependencies": {
+    "jshint": "^2.9.4",
     "mocha": "^3.2.0",
-    "mysql2": "^1.2.0",
+    "release-it": "^2.7.1",
     "should": "^11.2.1"
   }
 }
