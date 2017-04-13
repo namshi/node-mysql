@@ -1,6 +1,6 @@
 {
-  "name": "node-mysql",
-  "version": "0.1.0",
+  "name": "namshi-node-mysql",
+  "version": "0.1.2",
   "description": "Small wrapper for mysql2.",
   "main": "index.js",
   "scripts": {

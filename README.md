@@ -2,7 +2,7 @@
 
 This wrapper provides some enhancements for [`node-mysql2`](https://github.com/sidorares/node-mysql2)
 
-[![build status](https://travis-ci.org/namshi/node-mysql.svg)](http://travis-ci.org/namshi/node-mysql)
+[![Build Status](https://travis-ci.com/namshi/node-mysql.svg?token=V2NdsNG4wfMuQLkCArk9&branch=master)](https://travis-ci.com/namshi/node-mysql)
 
 ## Installation
 
@@ -32,9 +32,9 @@ let config = {
 
 let db = require('namshi-node-mysql')(config);
 
-db.query('UPDATE foo SET key = ?', ['value']).then(function () {
+db.query('UPDATE foo SET key = ?', ['value']).then(() => {
 	return db.query('SELECT * FROM foo');
-}).spread(function (rows) {
+}).spread(rows => {
 	console.log('Look at all the foo', rows);
 });
 
@@ -48,9 +48,8 @@ let config = {
 }
 
 let db2 = require('namshi-node-mysql')(config);
-let db2 = require('mysql-promise')('second-db');
 
-db2.query('SELECT * FROM users').spread(function (users) {
+db2.query('SELECT * FROM users').spread(users => {
 	console.log('Hello users', users);
 });
 
@@ -70,11 +69,11 @@ let config = {
 let db = require('namshi-node-mysql')(config);
 
 
-db.pool.on('connection', function (poolConnection) {
+db.pool.on('connection', poolConnection => {
     poolConnection.config.namedPlaceholders = true;
 });
 
-db.execute('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10}).spread(function (users) {
+db.execute('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10}).spread( users => {
 	console.log('Hello users', users);
 });
 
