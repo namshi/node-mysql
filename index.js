@@ -8,6 +8,34 @@ function DB() {
   this.pool = null;
 }
 
+function runQueryWith(methodName, query, params) {
+  let connection;
+
+  return this.getConnection().then((conn)=> {
+    console.log('getting connection');
+    connection = conn;
+
+    return connection[methodName](query, params);
+  }).then((results) => {
+    connection && connection.connection && connection.connection.unprepare(query);
+    connection && connection.release();
+    console.log('ok - released connection');
+
+    return results[0];
+  }).catch(err => {
+    if (!connection) {
+      console.error('could not establish db connection', err.message);
+      throw err;
+    }
+
+    connection.connection && connection.connection.unprepare(query);
+    connection.release();
+    console.error(`released connection, even with error in sql query execution. Error Message : ${err.message} - `, query, params);
+
+    throw err;
+  });
+}
+
 /**
  * We are ovveriding the select method so that it returns the rows not the metadata
  * that is included in results[1]
@@ -35,41 +63,27 @@ DB.prototype.configure = function (config) {
 };
 
 /**
- * Run DB query, it uses prepared statements
+ * Run DB query, it does not use preprared statements. But it supports batch
+ * operations: https://github.com/mysqljs/mysql/pull/230
  * @param  {String} query
  * @param  {Object} [params]
  * @return {Promise}
  */
-DB.prototype.query = function (query, params) {
-  let connection;
+DB.prototype.query = function(query, params) {
+  return runQueryWith('query', query, params);
+}
 
-  return this.getConnection().then((conn)=> {
-    console.log('getting connection');
-    connection = conn;
-    return connection.execute(query, params);
-  }).then((results) => {
-    if (connection && connection.connection) {
-      connection.connection.unprepare(query);
-      connection.release();
-      console.log('ok - released connection');
-    }
 
-    return results[0];
-  }).catch(err => {
-    if (!connection) {
-      console.error('could not establish db connection', err.message);
-      throw err;
-    }
-    if (connection.connection) {
-      connection.connection.unprepare(query);
-    }
-
-    connection.release();
-    console.error(`released connection, even with error in sql query execution. Error Message : ${err.message} - `, query, params);
-
-    throw err;
-  });
-};
+/**
+ * Run a DB query using prepared statements. This function does not batch
+ * operations
+ * @param  {String} query
+ * @param  {Object} [params]
+ * @return {Promise}
+ */
+DB.prototype.execute = function(query, params) {
+  return runQueryWith('execute', query, params);
+}
 
 /**
 * Set Session wait timeout parameter to close connection if inactive
@@ -107,7 +121,7 @@ DB.prototype.rollback = function (connection) {
 };
 
 /**
- * Commit the current transaction 
+ * Commit the current transaction
  * @param  {Object} connection The connection object from startTransaction
  */
 DB.prototype.commit = function (connection) {

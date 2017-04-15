@@ -19,7 +19,7 @@ $ npm install namshi-node-mysql --save
 
 ## Example Usage of query
 
-`query()` uses [prepared-statements](https://github.com/sidorares/node-mysql2#prepared-statements).
+`query()` does not use prepared statements.
 
 ``` js
 
@@ -55,6 +55,30 @@ db2.query('SELECT * FROM users').spread(users => {
 
 
 ```
+
+## Example Usage of execute
+
+`execute()` uses [prepared statements](https://github.com/sidorares/node-mysql2#prepared-statements).
+
+``` js
+
+let config = {
+	host: "localhost",
+	user: "foo",
+	password: "bar",
+	database: "db"
+}
+
+let db = require('namshi-node-mysql')(config);
+
+db.execute('UPDATE foo SET key = ?', ['value']).then(() => {
+	return db.query('SELECT * FROM foo');
+}).spread(rows => {
+	console.log('Look at all the foo', rows);
+});
+
+```
+
 
 ## Example usage of [namedPlaceholders]((https://github.com/sidorares/node-mysql2#named-placeholders))
 
