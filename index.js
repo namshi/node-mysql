@@ -1,6 +1,4 @@
 /* jshint esversion: 6 */
-
-
 const mysql2 = require('mysql2/promise');
 let instances = {};
 
@@ -63,26 +61,26 @@ DB.prototype.configure = function (config) {
 };
 
 /**
- * Run DB query, it does not use preprared statements. But it supports batch
- * operations: https://github.com/mysqljs/mysql/pull/230
- * @param  {String} query
- * @param  {Object} [params]
- * @return {Promise}
- */
-DB.prototype.query = function(query, params) {
-  return runQueryWith('query', query, params);
-}
-
-
-/**
- * Run a DB query using prepared statements. This function does not batch
+ * Run a DB query using prepared statements. This function does not support batch
  * operations
  * @param  {String} query
  * @param  {Object} [params]
  * @return {Promise}
  */
-DB.prototype.execute = function(query, params) {
+DB.prototype.query = function(query, params) {
   return runQueryWith('execute', query, params);
+}
+
+
+/**
+ * Run a DB query without using prepared statements. This function supports batch
+ * operations
+ * @param  {String} query
+ * @param  {Object} [params]
+ * @return {Promise}
+ */
+DB.prototype.bulk = function(query, params) {
+  return runQueryWith('query', query, params);
 }
 
 /**

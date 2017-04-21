@@ -19,7 +19,7 @@ $ npm install namshi-node-mysql --save
 
 ## Example Usage of query
 
-`query()` does not use prepared statements.
+`query()` uses [prepared statements](https://github.com/sidorares/node-mysql2#prepared-statements) but does not support bulk operations.
 
 ``` js
 
@@ -56,9 +56,9 @@ db2.query('SELECT * FROM users').spread(users => {
 
 ```
 
-## Example Usage of execute
+## Example Usage of bulk
 
-`execute()` uses [prepared statements](https://github.com/sidorares/node-mysql2#prepared-statements).
+`execute()`
 
 ``` js
 
@@ -69,9 +69,15 @@ let config = {
 	database: "db"
 }
 
+var values = [
+    ['demian', 'demian@gmail.com', 1],
+    ['john', 'john@gmail.com', 2],
+    ['mark', 'mark@gmail.com', 3],
+    ['pete', 'pete@gmail.com', 4]
+];
 let db = require('namshi-node-mysql')(config);
 
-db.execute('UPDATE foo SET key = ?', ['value']).then(() => {
+db.bulk('INSERT INTO Test (name, email, n) VALUES ?', [values]).then(() => {
 	return db.query('SELECT * FROM foo');
 }).spread(rows => {
 	console.log('Look at all the foo', rows);
