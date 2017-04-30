@@ -78,7 +78,7 @@ DB.prototype.configure = function (config) {
  * @return {Promise}
  */
 DB.prototype.query = function(query, params) {
-  return runQueryWith('execute', query, params);
+  return runQueryWith.call(this, 'execute', query, params);
 }
 
 
@@ -90,7 +90,7 @@ DB.prototype.query = function(query, params) {
  * @return {Promise}
  */
 DB.prototype.bulk = function(query, params) {
-  return runQueryWith('query', query, params);
+  return runQueryWith.call(this, 'query', query, params);
 }
 
 /**
