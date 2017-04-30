@@ -4,7 +4,7 @@
   "description": "Small wrapper for mysql2.",
   "main": "index.js",
   "scripts": {
-    "test": "jshint index.js && ./node_modules/.bin/mocha -t 2000",
+    "test": "./node_modules/.bin/mocha -t 2000",
     "release": "npm test && release-it -n -i patch",
     "release:minor": "npm test && release-it -n -i minor",
     "release:major": "npm test && release-it -n -i major"

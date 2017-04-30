@@ -1,11 +1,42 @@
 /* jshint esversion: 6 */
-
-
 const mysql2 = require('mysql2/promise');
 let instances = {};
 
 function DB() {
   this.pool = null;
+  this.debug = false;
+}
+
+function runQueryWith(methodName, query, params) {
+  let connection;
+
+  return this.getConnection().then((conn)=> {
+    console.log('getting connection');
+    connection = conn;
+
+    if (this.debug) {
+      console.info('QUERY AND PARAMS', query, params);
+    }
+
+    return connection[methodName](query, params);
+  }).then((results) => {
+    connection && connection.connection && connection.connection.unprepare(query);
+    connection && connection.release();
+    console.log('ok - released connection');
+
+    return results[0];
+  }).catch(err => {
+    if (!connection) {
+      console.error('could not establish db connection', err.message);
+      throw err;
+    }
+
+    connection.connection && connection.connection.unprepare(query);
+    connection.release();
+    console.error(`released connection, even with error in sql query execution. Error Message : ${err.message} - `, query, params);
+
+    throw err;
+  });
 }
 
 /**
@@ -31,45 +62,36 @@ DB.prototype.getConnection = function () {
  * @param  {Object} config
  */
 DB.prototype.configure = function (config) {
+  if ('debug' in config) {
+    this.debug = config.debug;
+    delete config.debug;
+  }
+
   this.pool = mysql2.createPool(config);
 };
 
 /**
- * Run DB query, it uses prepared statements
+ * Run a DB query using prepared statements. This function does not support batch
+ * operations
  * @param  {String} query
  * @param  {Object} [params]
  * @return {Promise}
  */
-DB.prototype.query = function (query, params) {
-  let connection;
+DB.prototype.query = function(query, params) {
+  return runQueryWith('execute', query, params);
+}
 
-  return this.getConnection().then((conn)=> {
-    console.log('getting connection');
-    connection = conn;
-    return connection.execute(query, params);
-  }).then((results) => {
-    if (connection && connection.connection) {
-      connection.connection.unprepare(query);
-      connection.release();
-      console.log('ok - released connection');
-    }
 
-    return results[0];
-  }).catch(err => {
-    if (!connection) {
-      console.error('could not establish db connection', err.message);
-      throw err;
-    }
-    if (connection.connection) {
-      connection.connection.unprepare(query);
-    }
-
-    connection.release();
-    console.error(`released connection, even with error in sql query execution. Error Message : ${err.message} - `, query, params);
-
-    throw err;
-  });
-};
+/**
+ * Run a DB query without using prepared statements. This function supports batch
+ * operations
+ * @param  {String} query
+ * @param  {Object} [params]
+ * @return {Promise}
+ */
+DB.prototype.bulk = function(query, params) {
+  return runQueryWith('query', query, params);
+}
 
 /**
 * Set Session wait timeout parameter to close connection if inactive
@@ -107,7 +129,7 @@ DB.prototype.rollback = function (connection) {
 };
 
 /**
- * Commit the current transaction 
+ * Commit the current transaction
  * @param  {Object} connection The connection object from startTransaction
  */
 DB.prototype.commit = function (connection) {

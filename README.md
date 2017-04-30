@@ -19,7 +19,7 @@ $ npm install namshi-node-mysql --save
 
 ## Example Usage of query
 
-`query()` uses [prepared-statements](https://github.com/sidorares/node-mysql2#prepared-statements).
+`query()` uses [prepared statements](https://github.com/sidorares/node-mysql2#prepared-statements) but does not support bulk operations.
 
 ``` js
 
@@ -55,6 +55,52 @@ db2.query('SELECT * FROM users').spread(users => {
 
 
 ```
+## Enable DEBUG mode to log the query being executed and its parameters.
+
+``` js
+// You can enable debugging by passing the `debug` parameter as follow:
+// by default it is set to false.
+
+let config = {
+	host: "localhost",
+	user: "foo",
+	password: "bar",
+	database: "db",
+	debug: true;
+}
+```
+
+
+
+## Example Usage of bulk
+
+`execute()`
+
+``` js
+
+let config = {
+	host: "localhost",
+	user: "foo",
+	password: "bar",
+	database: "db"
+}
+
+var values = [
+    ['demian', 'demian@gmail.com', 1],
+    ['john', 'john@gmail.com', 2],
+    ['mark', 'mark@gmail.com', 3],
+    ['pete', 'pete@gmail.com', 4]
+];
+let db = require('namshi-node-mysql')(config);
+
+db.bulk('INSERT INTO Test (name, email, n) VALUES ?', [values]).then(() => {
+	return db.query('SELECT * FROM foo');
+}).spread(rows => {
+	console.log('Look at all the foo', rows);
+});
+
+```
+
 
 ## Example usage of [namedPlaceholders]((https://github.com/sidorares/node-mysql2#named-placeholders))
 
