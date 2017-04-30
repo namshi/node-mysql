@@ -4,6 +4,7 @@ let instances = {};
 
 function DB() {
   this.pool = null;
+  this.debug = false;
 }
 
 function runQueryWith(methodName, query, params) {
@@ -12,6 +13,10 @@ function runQueryWith(methodName, query, params) {
   return this.getConnection().then((conn)=> {
     console.log('getting connection');
     connection = conn;
+
+    if (this.debug) {
+      console.info('QUERY AND PARAMS', query, params);
+    }
 
     return connection[methodName](query, params);
   }).then((results) => {
@@ -57,6 +62,11 @@ DB.prototype.getConnection = function () {
  * @param  {Object} config
  */
 DB.prototype.configure = function (config) {
+  if ('debug' in config) {
+    this.debug = config.debug;
+    delete config.debug;
+  }
+
   this.pool = mysql2.createPool(config);
 };
 

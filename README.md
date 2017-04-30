@@ -55,6 +55,22 @@ db2.query('SELECT * FROM users').spread(users => {
 
 
 ```
+## Enable DEBUG mode to log the query being executed and its parameters.
+
+``` js
+// You can enable debugging by passing the `debug` parameter as follow:
+// by default it is set to false.
+
+let config = {
+	host: "localhost",
+	user: "foo",
+	password: "bar",
+	database: "db",
+	debug: true;
+}
+```
+
+
 
 ## Example Usage of bulk
 
