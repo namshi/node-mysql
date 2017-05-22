@@ -33,7 +33,6 @@ function runQueryWith(methodName, query, params) {
 
     connection.connection && connection.connection.unprepare(query);
     connection.release();
-    console.error(`released connection, even with error in sql query execution. Error Message : ${err.message} - `, query, params);
 
     throw err;
   });
