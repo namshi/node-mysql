@@ -74,7 +74,7 @@ let config = {
 
 ## Example Usage of bulk
 
-`execute()`
+`bulk()`
 
 ``` js
 
@@ -119,7 +119,7 @@ db.pool.on('connection', poolConnection => {
     poolConnection.config.namedPlaceholders = true;
 });
 
-db.execute('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10}).spread( users => {
+db.query('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10}).spread( users => {
 	console.log('Hello users', users);
 });
 
