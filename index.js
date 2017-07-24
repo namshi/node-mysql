@@ -11,10 +11,9 @@ function runQueryWith(methodName, query, params) {
   let connection;
 
   return this.getConnection().then((conn)=> {
-    console.log('getting connection');
     connection = conn;
-
     if (this.debug) {
+      console.log('getting connection');
       console.info('QUERY AND PARAMS', query, params);
     }
 
@@ -22,7 +21,9 @@ function runQueryWith(methodName, query, params) {
   }).then((results) => {
     connection && connection.connection && connection.connection.unprepare(query);
     connection && connection.release();
-    console.log('ok - released connection');
+    if (this.debug) {
+      console.log('ok - released connection');
+    }
 
     return results[0];
   }).catch(err => {
@@ -45,7 +46,10 @@ function runQueryWith(methodName, query, params) {
  */
 DB.prototype.getConnection = function () {
   return this.pool.getConnection().then((conn)=> {
-    console.log('getting connection');
+    if (this.debug) {
+      console.log('getting connection');
+    }
+    
     let exec = conn.execute;
     conn.select = function(query, params) {
       return exec.call(this, query, params).then((results) => {
