@@ -46,10 +46,7 @@ function prepareBulk(query, values) {
 
   let placeholders = '';
 
-  for (let i = 0; i < values.length; i++) {
-    values[i] = values[i].map(value => {
-      return (value === null) ? 'NULL' : value;
-    });
+  for (let i = 0; i < values.length; i++) {  
     placeholders += `(${Array(values[i].length).fill('?')})`;
     placeholders += `${(values.length - 1  != i) ? ',' : ''}`;
   }

@@ -56,7 +56,7 @@ describe('node-mysql', () => {
     const connectionStub = {
       execute: function(query, params){
         assert.equal(query, 'INSERT INTO tbl_name (a,b,c) VALUES (?,?,?),(?,?,?)');
-        assert.deepEqual(params, [1, 2, 3, 4, 5, 6]);
+        assert.deepEqual(params, [1, 2, 3, 4, 5, null]);
 
         return [];
       },
@@ -65,7 +65,7 @@ describe('node-mysql', () => {
     };
     sinon.stub(db, 'configure').callsFake(function(config) { });
     sinon.stub(db, 'getConnection').resolves(connectionStub);
-    db.bulk('INSERT INTO tbl_name (a,b,c) VALUES ?', [[1,2,3],[4,5,6]]).then(res => {
+    db.bulk('INSERT INTO tbl_name (a,b,c) VALUES ?', [[1,2,3],[4,5, null]]).then(res => {
       done();
     }).catch(err => {
       console.log('error: ', err);
