@@ -1,7 +1,7 @@
 `use strict`
-const should = require('should');
-
 const assert = require('assert');
+const should = require('should');
+const sinon = require('sinon');
 
 describe('node-mysql', () => {
   it('should return correct instance', (done) => {
@@ -39,5 +39,38 @@ describe('node-mysql', () => {
     }
 
     done();
+  });
+
+  it('should throw an error if array of arrays is not passed to bulk', (done) => {
+    try {
+      const db = require('../index')({host: 'mysql', name: 'foo'});
+      db.bulk('INSERT INTO tbl_name (a,b,c) VALUES ?', []);
+    } catch (err) {
+      assert.equal(err.message, 'Please provide an array of arrays for bulk insert like [[1,2], [1,3]]');
+    }
+    done();
+  });
+
+  it('should return a prepared insert query with correct values for array of arrays for bulk insert', (done) => {
+    const db = require('../index')({host: 'mysql', name: 'foo'});
+    const connectionStub = {
+      execute: function(query, params){
+        assert.equal(query, 'INSERT INTO tbl_name (a,b,c) VALUES (?,?,?),(?,?,?)');
+        assert.deepEqual(params, [1, 2, 3, 4, 5, 6]);
+
+        return [];
+      },
+      release: function() { },
+      connection: {unprepare: function() {}}
+    };
+    sinon.stub(db, 'configure').callsFake(function(config) { });
+    sinon.stub(db, 'getConnection').resolves(connectionStub);
+    db.bulk('INSERT INTO tbl_name (a,b,c) VALUES ?', [[1,2,3],[4,5,6]]).then(res => {
+      done();
+    }).catch(err => {
+      console.log('error: ', err);
+      assert.equal(err.message, 'should never reach here');
+      done();
+    });
   });
 });

@@ -74,7 +74,7 @@ let config = {
 
 ## Example Usage of bulk
 
-`bulk()`
+`bulk()` uses `execute` which supports prepared statements and we use prepared statements for bulk.
 
 ``` js
 
