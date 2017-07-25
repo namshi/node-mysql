@@ -7,7 +7,7 @@ function DB() {
   this.debug = false;
 }
 
-function runQueryWith(methodName, query, params) {
+function runQueryWith(query, params) {
   let connection;
 
   return this.getConnection().then((conn)=> {
@@ -17,7 +17,7 @@ function runQueryWith(methodName, query, params) {
       console.info('QUERY AND PARAMS', query, params);
     }
 
-    return connection[methodName](query, params);
+    return connection.execute(query, params);
   }).then((results) => {
     connection && connection.connection && connection.connection.unprepare(query);
     connection && connection.release();
@@ -39,6 +39,27 @@ function runQueryWith(methodName, query, params) {
   });
 }
 
+function prepareBulk(query, values) {
+  if(!Array.isArray(values) || (values[0] && !Array.isArray(values[0]))) {
+    throw new Error(`Please provide an array of arrays for bulk insert like [[1,2], [1,3]]`);
+  }
+
+  let placeholders = '';
+
+  for (let i = 0; i < values.length; i++) {
+    values[i] = values[i].map(value => {
+      return (value === null) ? 'NULL' : value;
+    });
+    placeholders += `(${Array(values[i].length).fill('?')})`;
+    placeholders += `${(values.length - 1  != i) ? ',' : ''}`;
+  }
+
+  return [
+    query.replace(`?`, placeholders),
+    values.reduce((acc, cur) => acc.concat(cur), [])
+  ];
+}
+
 /**
  * We are ovveriding the select method so that it returns the rows not the metadata
  * that is included in results[1]
@@ -49,7 +70,7 @@ DB.prototype.getConnection = function () {
     if (this.debug) {
       console.log('getting connection');
     }
-    
+
     let exec = conn.execute;
     conn.select = function(query, params) {
       return exec.call(this, query, params).then((results) => {
@@ -81,19 +102,20 @@ DB.prototype.configure = function (config) {
  * @return {Promise}
  */
 DB.prototype.query = function(query, params) {
-  return runQueryWith.call(this, 'execute', query, params);
+  return runQueryWith.call(this, query, params);
 }
 
 
 /**
- * Run a DB query without using prepared statements. This function supports batch
- * operations
+ * Run a DB query using prepared statements. This function supports batch operations
+ *
  * @param  {String} query
  * @param  {Object} [params]
  * @return {Promise}
  */
 DB.prototype.bulk = function(query, params) {
-  return runQueryWith.call(this, 'query', query, params);
+  [query, params] = prepareBulk(query, params);
+  return runQueryWith.call(this, query, params);
 }
 
 /**
