@@ -39,14 +39,21 @@ function runQueryWith(query, params) {
   });
 }
 
-function prepareBulk(query, values) {
+/**
+ * Format a query as a preapred statement for bulk insert.
+ *
+ * @param  {String} query
+ * @param  {Array} values
+ * @return {Array}
+ */
+DB.prototype.prepareBulk = function(query, values) {
   if(!Array.isArray(values) || (values[0] && !Array.isArray(values[0]))) {
     throw new Error(`Please provide an array of arrays for bulk insert like [[1,2], [1,3]]`);
   }
 
   let placeholders = '';
 
-  for (let i = 0; i < values.length; i++) {  
+  for (let i = 0; i < values.length; i++) {
     placeholders += `(${Array(values[i].length).fill('?')})`;
     placeholders += `${(values.length - 1  != i) ? ',' : ''}`;
   }
@@ -58,7 +65,7 @@ function prepareBulk(query, values) {
 }
 
 /**
- * We are ovveriding the select method so that it returns the rows not the metadata
+ * We are overiding the select method so that it returns the rows not the metadata
  * that is included in results[1]
  * @return {Object} Connection
  */
@@ -111,7 +118,7 @@ DB.prototype.query = function(query, params) {
  * @return {Promise}
  */
 DB.prototype.bulk = function(query, params) {
-  [query, params] = prepareBulk(query, params);
+  [query, params] = this.prepareBulk(query, params);
   return runQueryWith.call(this, query, params);
 }
 

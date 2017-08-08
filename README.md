@@ -93,7 +93,7 @@ var values = [
 ];
 let db = require('namshi-node-mysql')(config);
 
-db.bulk('INSERT INTO Test (name, email, n) VALUES ?', [values]).then(() => {
+db.bulk('INSERT INTO foo (name, email, n) VALUES ?', [values]).then(() => {
 	return db.query('SELECT * FROM foo');
 }).spread(rows => {
 	console.log('Look at all the foo', rows);
@@ -101,6 +101,43 @@ db.bulk('INSERT INTO Test (name, email, n) VALUES ?', [values]).then(() => {
 
 ```
 
+## Example of prepareBulk
+
+`prepareBulk()` can be used if you want to format a query for bulk operation with a connection reused for a transaction.
+
+``` js
+
+let config = {
+	host: "localhost",
+	user: "foo",
+	password: "bar",
+	database: "db"
+}
+
+var values = [
+    ['demian', 'demian@gmail.com', 1],
+    ['john', 'john@gmail.com', 2],
+    ['mark', 'mark@gmail.com', 3],
+    ['pete', 'pete@gmail.com', 4]
+];
+let db = require('namshi-node-mysql')(config);
+let connection;
+
+db.startTransaction().then(conn => {
+	connection = conn;
+}).then(() => {
+	let [query, params] = db.prepareBulk('INSERT INTO foo (name, email, n) VALUES ?', [values]);
+	return connection.execute(query, params);
+}).then(result => {
+	return db.commit(connection);
+}).then(result => {
+	console.log('Rows committed');
+}).catch(err => {
+	db.rollback(connection).then(result => {
+		console.log('Rollback executed due to ', err.message);
+	});
+})
+```
 
 ## Example usage of [namedPlaceholders]((https://github.com/sidorares/node-mysql2#named-placeholders))
 
