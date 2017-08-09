@@ -39,6 +39,10 @@ function runQueryWith(query, params) {
   });
 }
 
+function flattenDeep(params) {
+    return Array.isArray(params) ? [].concat(...params.map(flattenDeep)) : params;
+}
+
 /**
  * Format a query as a preapred statement for bulk insert.
  *
@@ -106,7 +110,15 @@ DB.prototype.configure = function (config) {
  * @return {Promise}
  */
 DB.prototype.query = function(query, params) {
-  return runQueryWith.call(this, query, params);
+  let i = 0;
+  query = query.replace(/\?/g, function (match){
+    let param = params[i++];
+    if (Array.isArray(param)){
+      return Array(param.length).fill('?').join(',')
+    }
+    return '?';
+  });
+  return runQueryWith.call(this, query, flattenDeep(params));
 }
 
 
