@@ -146,15 +146,11 @@ let config = {
 	host: "localhost",
 	user: "foo",
 	password: "bar",
-	database: "db"
+	database: "db",
+	namedPlaceholders: true
 }
 
 let db = require('namshi-node-mysql')(config);
-
-
-db.pool.on('connection', poolConnection => {
-    poolConnection.config.namedPlaceholders = true;
-});
 
 db.query('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10}).spread( users => {
 	console.log('Hello users', users);
