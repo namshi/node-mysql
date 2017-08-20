@@ -40,9 +40,30 @@ function runQueryWith(query, params) {
 }
 
 function flatten(params) {
-  return params.reduce((acc, param) => 
+  return params.reduce((acc, param) =>
     Array.isArray(param) ? [...acc, ...param] : [...acc, param],
-  []); 
+  []);
+}
+
+/**
+ * If params contain arrays, the corresponding placeholders are expanded
+ * with extra placeholders to match arrays' lengths and params are flattened.
+ *
+ * @param  {String} query
+ * @param  {Array} params
+ * @return {Array}
+ */
+DB.prototype.prepareQuery = function(query, params) {
+  if(Array.isArray(params)){
+    let i = 0;
+    query = query.replace(/\?/g, function (match){
+      let param = params[i++];
+      return Array.isArray(param) ? Array(param.length).fill('?').join(',') : '?'
+    });
+    params = flatten(params);
+  }
+
+  return [query, params];
 }
 
 /**
@@ -106,20 +127,14 @@ DB.prototype.configure = function (config) {
 
 /**
  * Run a DB query using prepared statements. This function does not support batch
- * operations. If params contain arrays, the corresponding placeholders are expanded
- * with extra placeholders to match arrays' lengths and params are flattened.
+ * operations.
  * @param  {String} query
  * @param  {Object} [params]
  * @return {Promise}
  */
 DB.prototype.query = function(query, params) {
   if(Array.isArray(params)){
-    let i = 0;
-    query = query.replace(/\?/g, function (match){
-      let param = params[i++];
-      return Array.isArray(param) ? Array(param.length).fill('?').join(',') : '?'
-    });
-    params = flatten(params);
+    [query, params] = this.prepareQuery(query, params);
   }
 
   return runQueryWith.call(this, query, params);
