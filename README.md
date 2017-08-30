@@ -93,7 +93,7 @@ var values = [
 ];
 let db = require('namshi-node-mysql')(config);
 
-db.bulk('INSERT INTO foo (name, email, n) VALUES ?', [values]).then(() => {
+db.bulk('INSERT INTO foo (name, email, n) VALUES ?', values).then(() => {
 	return db.query('SELECT * FROM foo');
 }).spread(rows => {
 	console.log('Look at all the foo', rows);
