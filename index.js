@@ -202,6 +202,13 @@ DB.prototype.commit = function (connection) {
   });
 };
 
+/**
+ * Ping to ensure the connection is working fine.
+ */
+DB.prototype.ping = function () {
+  return runQueryWith.call(this, 'SELECT 1;', {}).then(() => 'PONG');
+}
+
 module.exports = function (opts) {
   if (!opts || Object.keys(opts).length <= 0) {
     throw new Error('The config object cannot be empty');
