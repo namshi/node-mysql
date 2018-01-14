@@ -4,7 +4,22 @@ let instances = {};
 
 function DB() {
   this.pool = null;
+  this.sessionConfig = null;
   this.debug = false;
+}
+
+function setSessionConfig(connection, config) {
+  if(!config) {
+    return;
+  }
+
+  if(this.debug) {
+    console.log(`Set Session Config ${config}`);
+  }
+
+  return Promise.all(Object.entries(config).map(([key, value]) =>
+    connection.query(`SET SESSION ${key} = ?`, [value])
+  ));
 }
 
 function runQueryWith(query, params) {
@@ -108,6 +123,11 @@ DB.prototype.getConnection = function () {
         return results[0];
       });
     };
+
+    if(this.sessionConfig) {
+      return setSessionConfig(conn, this.sessionConfig).then(() => conn)
+    }
+
     return conn;
   });
 };
@@ -120,6 +140,11 @@ DB.prototype.configure = function (config) {
   if ('debug' in config) {
     this.debug = config.debug;
     delete config.debug;
+  }
+
+  if ('sessionConfig' in config) {
+    this.sessionConfig = config.sessionConfig;
+    delete config.sessionConfig;
   }
 
   this.pool = mysql2.createPool(config);
