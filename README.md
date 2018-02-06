@@ -6,6 +6,7 @@ This wrapper provides some enhancements for [`node-mysql2`](https://github.com/s
 
 ## Installation
 
+
 This module can be installed with either yarn or npm:
 
 
