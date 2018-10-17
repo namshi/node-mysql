@@ -232,16 +232,17 @@ module.exports = function (opts) {
     throw new Error('The config object cannot be empty');
   }
 
-  name = '_default_';
+  let config = JSON.parse(JSON.stringify(opts));
+  let name = '_default_';
 
-  if (opts.name) {
-    name = opts.name;
-    delete opts.name;
+  if (config.name) {
+    name = config.name;
+    delete config.name;
   }
 
   if (!instances[name]) {
     let instance = new DB();
-    instance.configure(opts);
+    instance.configure(config);
     instances[name] = instance;
   }
 
