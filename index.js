@@ -204,13 +204,15 @@ DB.prototype.startTransaction = function (timeout) {
  * @param  {Object} connection The connection object from startTransaction
  */
 DB.prototype.rollback = function (connection) {
-  return connection.execute('ROLLBACK').then(()=> {
-    connection.release();
-  }).catch(err => {
-    connection.release();
+  if(connection){
+      return connection.execute('ROLLBACK').then(()=> {
+        connection.release();
+      }).catch(err => {
+        connection.release();
 
-    throw err;
-  });
+        throw err;
+      });
+  }
 };
 
 /**
