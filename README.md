@@ -70,7 +70,31 @@ let config = {
 }
 ```
 
+## Example of queryWithMetadata
+`queryWithMetadata()` is similar to `query()`, except that it returns query result and the metadata.
+``` js
 
+let config = {
+	host: "localhost",
+	user: "foo",
+	password: "bar",
+	database: "db"
+}
+
+let db = require('namshi-node-mysql')(config);
+
+db2.queryWithMetadata('SELECT 1').then(console.log);
+
+// This will print
+// [ [ { '1': 1 } ],
+// [ {
+// schema: '',
+// name: '1',
+// orgName: '',
+// table: '',
+// orgTable: '',
+// ... etc } ] ]
+```
 
 ## Example Usage of bulk
 

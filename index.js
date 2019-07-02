@@ -22,7 +22,7 @@ function setSessionConfig(connection, config) {
   ));
 }
 
-function runQueryWith(query, params) {
+function runQueryWith(query, params, metadata = false) {
   let connection;
 
   return this.getConnection().then((conn)=> {
@@ -40,6 +40,9 @@ function runQueryWith(query, params) {
       console.log('ok - released connection');
     }
 
+    if (metadata) {
+      return results
+    }
     return results[0];
   }).catch(err => {
     if (!connection) {
@@ -164,7 +167,20 @@ DB.prototype.query = function(query, params) {
 
   return runQueryWith.call(this, query, params);
 }
+/**
+ * Run a DB query using prepared statements. This function does not support batch
+ * operations. This function will also return metadata of operation.
+ * @param  {String} query
+ * @param  {Object} [params]
+ * @return {Promise}
+ */
+DB.prototype.queryWithMetadata = function(query, params) {
+  if(Array.isArray(params)){
+    [query, params] = this.prepareQuery(query, params);
+  }
 
+  return runQueryWith.call(this, query, params, true);
+}
 
 /**
  * Run a DB query using prepared statements. This function supports batch operations

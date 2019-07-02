@@ -9,6 +9,7 @@ describe('node-mysql', () => {
     const namedDb = require('../index')({host: 'mysql', name: 'foo'});
     namedDb.should.equal(require('../index')({host: 'mysql', name: 'foo'}));
     namedDb.should.have.property('query').which.is.a.Function;
+    namedDb.should.have.property('queryWithMetadata').which.is.a.Function;
     namedDb.should.have.property('bulk').which.is.a.Function;
     namedDb.should.have.property('getConnection').which.is.a.Function;
     namedDb.should.have.property('startTransaction').which.is.a.Function;
