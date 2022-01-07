@@ -51,7 +51,7 @@ let config2 = {
 	database: "db"
 }
 
-let db2 = await dbInitFn(config); 
+let db2 = await dbInitFn(config2); 
 
 let users = await db2.query('SELECT * FROM users');
 console.log('Hello users', users);
