@@ -122,7 +122,7 @@ console.log('Hello users', users);
 ## Example usage of Transactions
 
  with ```transactional``` you don't have to worry about committing or rollback the transactions example
-```db.transactional((conn) => { // your transaction queries }, timout) ```.
+```db.transactional(async (conn) => { // your transaction queries }, timout) ```.
  
 
 ####Default timeout is 20
@@ -133,10 +133,10 @@ console.log('Hello users', users);
 ``` js
 
 await db.transactional(
-    (conn) => { 
-        await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values1]);
-        await conn.query('INSERT INTO foo (name, email, n) VALUES ?', [values2]);
-        await conn.query('INSERT INTO bar (name, email, n) VALUES ?', [values3]);
+    async (conn) => { 
+            await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values1]);
+            await conn.query('INSERT INTO foo (name, email, n) VALUES ?', [values2]);
+            await conn.query('INSERT INTO bar (name, email, n) VALUES ?', [values3]);
  },10)
 
 
@@ -149,10 +149,10 @@ await db.transactional(
 try{
 
 await db.transactional(
-    (conn) => { 
-        await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values]);
-        
-        throw new Error(`bad :)`).
+    async (conn) => { 
+         await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values]);
+     
+         throw new Error(`bad :)`).
         
  });
  
