@@ -56,6 +56,8 @@ describe('MySqlDriver', () => {
                                      from user`);
         expect(res[0]['count']).toStrictEqual(0)
     });
+
+
     test("COMMITTED transaction ", async () => {
 
         //
@@ -114,7 +116,6 @@ describe('MySqlDriver', () => {
         expect(updatedUser[0].name).toStrictEqual('xxx_xxx');
     });
 
-
     test('insert bulk', async () => {
         jest.setTimeout(60000);
         let input = [];
@@ -124,22 +125,47 @@ describe('MySqlDriver', () => {
         }
 
         await mysql.bulk('insert into user (id, name) VALUES ? ', input);
-    }, );
+    },);
 
     test(`select one row using the direct pool api
-            not recommended as you have to release the connection your selfe`, async () => {
-        let query = `SELECT name
-                     from user
-                     where id = ?`;
-        let params = [333]
+    not recommended as you have to release
+    the connection your self`,
+        async () => {
+            let query = `SELECT name
+                         from user
+                         where id = ?`;
+            let params = [333]
 
 
-        const connection = await mysql.pool.getConnection();
-        let [res,] = await connection.execute(query, params);
+            const connection = await mysql.pool.getConnection();
+            let [res,] = await connection.execute(query, params);
 
-        await connection.release();
+            await connection.release();
 
-        expect(res).toHaveLength(1)
+            expect(res).toHaveLength(1)
+        });
+
+    test("query insert with on DUPLICATE KEY UPDATE test", async () => {
+
+        await mysql.query(
+            `INSERT INTO user (id, name)
+             VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE name=VALUES(name)`, [250, 'test user name']
+        )
+        let [user] = await mysql.query('select name from user where id =?', [250]);
+
+        expect(user.name).toStrictEqual('test user name')
+
+        await mysql.query(
+            `INSERT INTO user (id, name)
+             VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE name=VALUES(name)`, [250, 'test user name updated']
+        )
+
+        let [userUpdated] = await mysql.query('select name from user where id =?', [250]);
+
+        expect(userUpdated.name).toStrictEqual('test user name updated')
+
     });
 
 });
