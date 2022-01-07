@@ -134,12 +134,18 @@ console.log('Hello users', users);
 
 #### Example of success transaction with timeout =10
 ``` js
-
+const values = 
+ [ 
+        ['testName1', 'testEmail1@test.com' ,1],
+        ['testName2', 'testEmail2@test.com' ,2],
+        //...
+        ['testName1000', 'testEmail1000@test.com' ,1000], 
+ ] 
 await db.transactional(
     async (conn) => { 
-            await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values1]);
-            await conn.query('INSERT INTO foo (name, email, n) VALUES ?', [values2]);
-            await conn.query('INSERT INTO bar (name, email, n) VALUES ?', [values3]);
+            await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values]);
+            await conn.query('INSERT INTO foo (name, email, n) VALUES ?', [values]);
+            await conn.query('INSERT INTO bar (name, email, n) VALUES ?', [values]);
  },10)
 
 
