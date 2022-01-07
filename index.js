@@ -3,7 +3,7 @@ const mysql2 = require('mysql2/promise');
 
 let instances = {};
 
-const createPoolByConfig = async (config) => await mysql2.createPool(config);
+const createPoolByConfig = (config) => mysql2.createPool(config);
 
 const query = (pool) => (query, params) => runQuery(pool, query, params);
 
@@ -48,15 +48,15 @@ const endPool = (dbName, pool) => async () => {
     delete instances[dbName];
 }
 
-const createNewDbConnection = async (name, config) => {
+const createNewDbConnection = (name, config) => {
 
     let instance = {};
 
     // connection pool
-    instance.pool = await createPoolByConfig(config);
+    instance.pool = createPoolByConfig(config);
 
     // function to stop/end pool connections
-    instance.stop = await endPool(name, instance.pool);
+    instance.stop = endPool(name, instance.pool);
 
     // async query runner function that return only result
     instance.query = query(instance.pool);
@@ -66,7 +66,7 @@ const createNewDbConnection = async (name, config) => {
     return instance;
 }
 
-const init = async (opts) => {
+const init = (opts) => {
     if (!opts || Object.keys(opts).length <= 0) {
         throw new Error('The config object cannot be empty');
     }
@@ -83,7 +83,7 @@ const init = async (opts) => {
     }
 
     if (!instances[name]) {
-        instances[name] = await createNewDbConnection(name, config);
+        instances[name] = createNewDbConnection(name, config);
     }
 
     return instances[name];

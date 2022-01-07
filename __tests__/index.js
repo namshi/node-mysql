@@ -25,7 +25,7 @@ describe('MySqlDriver', () => {
             connectTimeout: 10000,
         }
 
-        mysql = await mysqlInitFn(config);
+        mysql = mysqlInitFn(config);
     });
 
     afterAll(async () => {

@@ -33,7 +33,7 @@ let config = {
 	database: "db"
 }
 
-let db = await dbInitFn(config); 
+let db = dbInitFn(config); 
 
 await db.query('UPDATE foo SET key = ?', ['value']);
 
@@ -51,7 +51,7 @@ let config2 = {
 	database: "db"
 }
 
-let db2 = await dbInitFn(config2); 
+let db2 = dbInitFn(config2); 
 
 let users = await db2.query('SELECT * FROM users');
 console.log('Hello users', users);
@@ -114,7 +114,7 @@ let config = {
 	namedPlaceholders: true // must be there 
 }
 
-let db = await dbInitFn(config);
+let db = dbInitFn(config);
 
 let users = await db.query('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10})
 console.log('Hello users', users);
