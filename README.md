@@ -103,6 +103,9 @@ console.log('Look at all the foo', rows);
 ## Example usage of [namedPlaceholders]((https://github.com/sidorares/node-mysql2#named-placeholders))
 
 ``` js
+let dbInitFn = require('namshi-node-mysql')
+
+
 let config = {
 	host: "localhost",
 	user: "foo",
@@ -111,7 +114,7 @@ let config = {
 	namedPlaceholders: true // must be there 
 }
 
-let db = require('namshi-node-mysql')(config);
+let db = await dbInitFn(config);
 
 let users = await db.query('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10})
 console.log('Hello users', users);
