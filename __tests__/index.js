@@ -59,7 +59,7 @@ describe('MySqlDriver', () => {
     test("COMMITTED transaction ", async () => {
 
         //
-        await mysql.bulkInsert('insert into user (id, name) values ?', [[222, 'xxx_xxx']]);
+        await mysql.bulk('insert into user (id, name) values ?', [[222, 'xxx_xxx']]);
         let user = await mysql.query(`select id, name
                                       from user
                                       where id = ?`, [222]);
@@ -83,7 +83,7 @@ describe('MySqlDriver', () => {
     test("ROLLBACK transaction (data haven't changed)", async () => {
 
         //
-        await mysql.bulkInsert('insert into user (id, name) values ?', [[333, 'xxx_xxx']]);
+        await mysql.bulk('insert into user (id, name) values ?', [[333, 'xxx_xxx']]);
         let user = await mysql.query('select id, name from user where id = ?', [333]);
 
         expect(user[0].name).toStrictEqual('xxx_xxx');
@@ -123,7 +123,7 @@ describe('MySqlDriver', () => {
             input.push([i, `test ${i}`])
         }
 
-        await mysql.bulkInsert('insert into user (id, name) VALUES ? ', input);
+        await mysql.bulk('insert into user (id, name) VALUES ? ', input);
     }, );
 
     test(`select one row using the direct pool api

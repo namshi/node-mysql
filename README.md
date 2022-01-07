@@ -8,7 +8,6 @@ This wrapper provides some enhancements for [`node-mysql2`](https://github.com/s
 
 This module can be installed with either yarn or npm:
 
-
 ``` bash
 $ yarn add namshi-node-mysql
 ```
@@ -19,9 +18,13 @@ $ npm install namshi-node-mysql --save
 
 ## Example Usage of query
 
-`query()` uses [prepared statements](https://github.com/sidorares/node-mysql2#prepared-statements) but does not support bulk operations.
+`query()` uses [prepared statements](https://github.com/sidorares/node-mysql2#prepared-statements) but does not support
+bulk operations.
 
 ``` js
+
+
+let dbInitFn = require('namshi-node-mysql')
 
 let config = {
 	host: "localhost",
@@ -30,16 +33,17 @@ let config = {
 	database: "db"
 }
 
-let db = require('namshi-node-mysql')(config);
+let db = await dbInitFn(config); 
 
-db.query('UPDATE foo SET key = ?', ['value']).then(() => {
-	return db.query('SELECT * FROM foo');
-}).spread(rows => {
-	console.log('Look at all the foo', rows);
-});
+await db.query('UPDATE foo SET key = ?', ['value']);
+
+let rows = await db.query('SELECT * FROM foo');
+
+console.log('Look at all the foo', rows);
+
 
 // using multiple databases, you can add a "name" key to your config object. For example:
-let config = {
+let config2 = {
 	name: "second-db",
 	host: "localhost",
 	user: "foo",
@@ -47,14 +51,13 @@ let config = {
 	database: "db"
 }
 
-let db2 = require('namshi-node-mysql')(config);
+let db2 = await dbInitFn(config); 
 
-db2.query('SELECT * FROM users').spread(users => {
-	console.log('Hello users', users);
-});
-
+let users = await db2.query('SELECT * FROM users');
+console.log('Hello users', users);
 
 ```
+
 ## Enable DEBUG mode to log the query being executed and its parameters.
 
 ``` js
@@ -70,11 +73,9 @@ let config = {
 }
 ```
 
-
-
 ## Example Usage of bulk
 
-`bulk()` uses `execute` which supports prepared statements and we use prepared statements for bulk.
+`bulk()` uses `execute` which supports prepared statements, and we use prepared statements for bulk.
 
 ``` js
 
@@ -91,52 +92,12 @@ var values = [
     ['mark', 'mark@gmail.com', 3],
     ['pete', 'pete@gmail.com', 4]
 ];
-let db = require('namshi-node-mysql')(config);
 
-db.bulk('INSERT INTO foo (name, email, n) VALUES ?', values).then(() => {
-	return db.query('SELECT * FROM foo');
-}).spread(rows => {
-	console.log('Look at all the foo', rows);
-});
+await db.bulk('INSERT INTO foo (name, email, n) VALUES ?', values)
 
-```
+let rows = await  db.query('SELECT * FROM foo');
+console.log('Look at all the foo', rows);
 
-## Example of prepareBulk
-
-`prepareBulk()` can be used if you want to format a query for bulk operation with a connection reused for a transaction.
-
-``` js
-
-let config = {
-	host: "localhost",
-	user: "foo",
-	password: "bar",
-	database: "db"
-}
-
-var values = [
-    ['demian', 'demian@gmail.com', 1],
-    ['john', 'john@gmail.com', 2],
-    ['mark', 'mark@gmail.com', 3],
-    ['pete', 'pete@gmail.com', 4]
-];
-let db = require('namshi-node-mysql')(config);
-let connection;
-
-db.startTransaction().then(conn => {
-	connection = conn;
-}).then(() => {
-	let [query, params] = db.prepareBulk('INSERT INTO foo (name, email, n) VALUES ?', [values]);
-	return connection.execute(query, params);
-}).then(result => {
-	return db.commit(connection);
-}).then(result => {
-	console.log('Rows committed');
-}).catch(err => {
-	db.rollback(connection).then(result => {
-		console.log('Rollback executed due to ', err.message);
-	});
-})
 ```
 
 ## Example usage of [namedPlaceholders]((https://github.com/sidorares/node-mysql2#named-placeholders))
@@ -147,54 +108,76 @@ let config = {
 	user: "foo",
 	password: "bar",
 	database: "db",
-	namedPlaceholders: true
+	namedPlaceholders: true // must be there 
 }
 
 let db = require('namshi-node-mysql')(config);
 
-db.query('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10}).spread( users => {
-	console.log('Hello users', users);
-});
+let users = await db.query('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10})
+console.log('Hello users', users);
+
 
 ```
 
-## Example usage of startTransaction, commit and rollback
+## Example usage of Transactions
 
+ with ```transactional``` you don't have to worry about committing or rollback the transactions example
+```db.transactional((conn) => { // your transaction queries }, timout) ```.
+ 
+
+####Default timeout is 20
+
+
+
+#### Example of success transaction with timeout =10
+``` js
+
+await db.transactional(
+    (conn) => { 
+        await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values1]);
+        await conn.query('INSERT INTO foo (name, email, n) VALUES ?', [values2]);
+        await conn.query('INSERT INTO bar (name, email, n) VALUES ?', [values3]);
+ },10)
+
+
+```
+
+
+#### Example of failed transaction without timeout, So it takes the default which is = 20 sec
 
 ``` js
-let config = {
-	host: "localhost",
-	user: "foo",
-	password: "bar",
-	database: "db"
+try{
+
+await db.transactional(
+    (conn) => { 
+        await conn.query('INSERT INTO user (name, email, n) VALUES ?', [values]);
+        
+        throw new Error(`bad :)`).
+        
+ });
+ 
+} catch(e){
+
+// do something here 
+console.log('failed transaction!! ', e)
+throw new Error ("some thing wrong happen , maybe you need to retry!");
+
 }
 
-let db = require('namshi-node-mysql')(config);
-
-let connection;
-
-db.startTransaction(30).then(conn => {
-	connection = con;
-}).catch(err) {
-	//handle error
-};
-
-//default timeout here is set to 20
-db.startTransaction().then(conn => {
-	connection = con;
-}).catch(err) {
-	//handle error
-};
-
-db.commit(connection).catch(err => {
-	//handle err
-});
-
-db.rollback(connection).catch(err => {
-	//handle err
-});
 ```
+
+### Stop the db connections pool
+
+If you want to stop the db pool connections and free up the resources
+
+```js
+
+await db.stop();
+
+```
+
 
 ## Credits
 
-This library depends on [node-mysql2](https://github.com/sidorares/node-mysql2). It is also considered a breaking-change upgrade of [node-mysql2-promise](https://github.com/namshi/node-mysql2-promise).
+This library depends on [node-mysql2](https://github.com/sidorares/node-mysql2). It is also considered a breaking-change
+upgrade of [node-mysql2-promise](https://github.com/namshi/node-mysql2-promise).

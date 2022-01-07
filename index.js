@@ -13,13 +13,15 @@ const bulkInsert = (pool) => async (query, params) => {
     await connection.release();
 }
 
+
 const transactional = (pool) =>
-    async (func) => {
+    async (func, timeout = 20) => {
 
         const connection = await pool.getConnection();
         await connection.query('START TRANSACTION');
 
         try {
+            connection.query('SET SESSION wait_timeout = ?', [timeout]);
             // run queries in transaction
             await func(connection);
             //then commit
@@ -58,7 +60,7 @@ const createNewDbConnection = async (name, config) => {
 
     // async query runner function that return only result
     instance.query = query(instance.pool);
-    instance.bulkInsert = bulkInsert(instance.pool);
+    instance.bulk = bulkInsert(instance.pool);
     instance.transactional = transactional(instance.pool);
 
     return instance;
