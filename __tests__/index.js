@@ -168,4 +168,51 @@ describe('MySqlDriver', () => {
 
     });
 
+
+    test('select with Where in clause', async () => {
+        jest.setTimeout(60000);
+        await mysql.query('truncate table user');
+
+        let input = [];
+
+        for (let i = 600; i < 605; i++) {
+            input.push([i, `test ${i}`])
+        }
+
+        await mysql.bulk('insert into user (id, name) VALUES ? ', input);
+
+
+        const ids = input.map(usr => usr[0]);
+        const query = 'select * from user where id in (?)';
+
+        const res = await mysql.query(query, [ids], false);
+        expect(res).toHaveLength(input.length)
+
+    },);
+
+
+    test('formatted query', async () => {
+        jest.setTimeout(60000);
+        await mysql.query('truncate table user');
+
+        let input = [];
+
+        for (let i = 500; i < 505; i++) {
+            input.push([i, `test ${i}`])
+        }
+
+        await mysql.bulk('insert into user (id, name) VALUES ? ', input);
+
+
+        const ids = input.map(usr => usr[0]);
+        const query = 'select * from user where id in (?)';
+        const formattedQ = await mysql.format(query, [ids]);
+
+        expect(formattedQ).toStrictEqual('select * from user where id in (500, 501, 502, 503, 504)');
+
+        const res = await mysql.query(formattedQ);
+        expect(res).toHaveLength(input.length)
+
+    },);
+
 });

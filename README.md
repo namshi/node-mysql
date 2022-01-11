@@ -18,8 +18,8 @@ $ npm install namshi-node-mysql --save
 
 ## Example Usage of query
 
-`query()` uses [prepared statements](https://github.com/sidorares/node-mysql2#prepared-statements) but does not support
-bulk operations.
+`query(sql , paramsArray, isPreparedStatment)` uses to for run sql queries `isPreparedStatment` is optional and true by
+default
 
 ``` js
 
@@ -119,20 +119,33 @@ let db = dbInitFn(config);
 let users = await db.query('SELECT * FROM users WHERE LIMIT = :limit', {limit: 10})
 console.log('Hello users', users);
 
+```
 
+## Example usage of `where in` clause
+
+with `where in` clause you have to set `isPreparedStatment` to `false`
+look at this [node-mysql2-issue](https://github.com/sidorares/node-mysql2/issues/196)
+
+so our query will be
+
+```js
+const query = 'SELECT * FROM users WHERE id in (?)';
+const userIds = [1, 2, 3, 4];
+const isPreparedStatment = false;
+let users = await db.query(query, userIds, isPreparedStatment);
+
+console.log('Hello users', users);
 ```
 
 ## Example usage of Transactions
 
- with ```transactional``` you don't have to worry about committing or rollback the transactions example
+with ```transactional``` you don't have to worry about committing or rollback the transactions example
 ```db.transactional(async (conn) => { // your transaction queries }, timout) ```.
- 
 
-####Default timeout is 20
-
-
+#### Default timeout is 20
 
 #### Example of success transaction with timeout =10
+
 ``` js
 const values = 
  [ 
@@ -150,7 +163,6 @@ await db.transactional(
 
 
 ```
-
 
 #### Example of failed transaction without timeout, So it takes the default which is = 20 sec
 
@@ -175,6 +187,44 @@ throw new Error ("some thing wrong happen , maybe you need to retry!");
 
 ```
 
+### Example of query format
+
+If you want format the query with the params first before running it
+
+```js
+
+let config = {
+    host: "localhost",
+    user: "foo",
+    password: "bar",
+    database: "db",
+    namedPlaceholders: true // must be there for formattedQueryWithPlaceHolder
+}
+
+let db = dbInitFn(config);
+
+const ids = [1, 2, 3, 4];
+
+let formattedQueryWithPlaceHolder =
+    await db.format(`select * from user where id in (:userIds)`
+        , {userIds: ids});
+
+console.log("Formated query with placeHolder ", formattedQuery);
+
+let formattedQuery =
+    await db.format(`select * from user where id in (?)`
+        , [ids]);
+
+console.log("Formated query ", formattedQuery);
+
+// running that formatted query 
+const users = await db.query(formattedQuery);
+console.log("Users ", users);
+
+
+
+```
+
 ### Stop the db connections pool
 
 If you want to stop the db pool connections and free up the resources
@@ -184,7 +234,6 @@ If you want to stop the db pool connections and free up the resources
 await db.stop();
 
 ```
-
 
 ## Credits
 

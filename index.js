@@ -3,15 +3,15 @@ const mysql2 = require('mysql2/promise');
 
 let instances = {};
 
+
 const createPoolByConfig = (config) => mysql2.createPool(config);
 
-const query = (pool) => (query, params) => runQuery(pool, query, params);
+const query = (pool) => (query, params, isPrepared = true) => runQuery(pool, query, params, isPrepared);
 
-const bulkInsert = (pool) => async (query, params) => {
-    const connection = await pool.getConnection();
-    await connection.query(query, [params]);
-    await connection.release();
-}
+const format = (pool) =>
+    async (query, params) => safePoolFn(pool, async connection => connection.format(query, params))
+
+const bulkInsert = (pool) => async (query, params) => safePoolFn(pool, conn => conn.query(query, [params]))
 
 
 const transactional = (pool) =>
@@ -36,12 +36,31 @@ const transactional = (pool) =>
         }
     };
 
-const runQuery = async (pool, query, params) => {
-    const connection = await pool.getConnection();
-    let [res,] = await connection.execute(query, params);
-    await connection.release();
-    return res;
+const runQuery = async (pool, query, params, isPrepared = true) => {
+    return safePoolFn(pool, async (conn) => {
+
+        if (isPrepared) {
+            let [res,] = await conn.execute(query, params);
+            return res;
+        }
+
+        let [res,] = await conn.query(query, params);
+        return res;
+    })
+
 };
+
+
+const safePoolFn = async (pool, fn) => {
+    const connection = await pool.getConnection();
+    try {
+        return fn(pool);
+    } catch (e) {
+        throw e;
+    } finally {
+        connection.release();
+    }
+}
 
 const endPool = (dbName, pool) => async () => {
     await pool.end();
@@ -60,6 +79,7 @@ const createNewDbConnection = (name, config) => {
 
     // async query runner function that return only result
     instance.query = query(instance.pool);
+    instance.format = format(instance.pool);
     instance.bulk = bulkInsert(instance.pool);
     instance.transactional = transactional(instance.pool);
 
