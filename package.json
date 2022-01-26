@@ -1,10 +1,10 @@
 {
   "name": "namshi-node-mysql",
-  "version": "2.1.0",
+  "version": "4.0.0",
   "description": "Small wrapper for mysql2.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha -t 2000",
+    "test": "jest --maxWorkers=4 ",
     "release": "npm test && release-it -n -i patch",
     "release:minor": "npm test && release-it -n -i minor",
     "release:major": "npm test && release-it -n -i major"
@@ -26,14 +26,16 @@
     "url": "https://github.com/namshi/node-mysql/issues"
   },
   "dependencies": {
-    "mysql2": "1.5.3"
+    "mysql2": "^2.3.3"
   },
   "homepage": "https://github.com/namshi/node-mysql",
   "devDependencies": {
+    "jest": "^27.4.7",
     "jshint": "^2.9.4",
     "mocha": "^3.2.0",
     "release-it": "^2.7.1",
     "should": "^11.2.1",
-    "sinon": "^2.3.8"
+    "sinon": "^2.3.8",
+    "testcontainers": "^8.1.2"
   }
 }
